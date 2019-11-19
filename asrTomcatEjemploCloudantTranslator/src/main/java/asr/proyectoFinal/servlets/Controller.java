@@ -51,7 +51,7 @@ public class Controller extends HttpServlet {
 
 				if(parametro==null)
 				{
-					out.println("usage: /insertar?palabra=palabra_a_traducir");
+					out.println("usage: /insertar?palabra=palabra_a_translate");
 				}
 				else
 				{
