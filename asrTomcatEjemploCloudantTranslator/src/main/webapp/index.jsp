@@ -16,6 +16,7 @@
 <ul>
 <li><a href="listar">Listar</a></li>
 <li><a href="insertar?palabra=hola">Insertar</a></li>
+<li><a href="Interpretar">Interpretrar</a></li>
 </ul>
 </body>
 </html>

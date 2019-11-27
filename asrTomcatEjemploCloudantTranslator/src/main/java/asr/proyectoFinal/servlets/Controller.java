@@ -22,10 +22,18 @@ import asr.proyectoFinal.dao.CloudantPalabraStore;
 import asr.proyectoFinal.dominio.Palabra;
 import asr.proyectoFinal.services.Traductor;
 
+import asr.proyectoFinal.services.AnalizadorTono;
+import com.ibm.cloud.sdk.core.security.Authenticator;
+import com.ibm.cloud.sdk.core.security.ConfigBasedAuthenticatorFactory;
+import com.ibm.watson.tone_analyzer.v3.model.ToneAnalysis;
+import com.ibm.watson.tone_analyzer.v3.model.ToneChatOptions;
+import com.ibm.watson.tone_analyzer.v3.model.ToneOptions;
+import com.ibm.watson.tone_analyzer.v3.model.UtteranceAnalyses;
+import com.ibm.cloud.sdk.core.security.IamAuthenticator;
 /**
  * Servlet implementation class Controller
  */
-@WebServlet(urlPatterns = {"/listar", "/insertar", "/hablar"})
+@WebServlet(urlPatterns = {"/listar", "/insertar", "/Interpretar"})
 public class Controller extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
@@ -68,6 +76,14 @@ public class Controller extends HttpServlet {
 					}
 				}
 				break;
+			case "/Interpretar":
+			
+				String text = "Team, I know that times are tough! Product "
+						  + "sales have been disappointing for the past three "
+						  + "quarters. We have a competitive product, but we "
+						  + "need to do a better job of selling it!";
+				ToneAnalysis toneAnalysis = AnalizadorTono.analyse(text);
+				System.out.println(toneAnalysis);
 		}
 		out.println("</html>");
 	}
