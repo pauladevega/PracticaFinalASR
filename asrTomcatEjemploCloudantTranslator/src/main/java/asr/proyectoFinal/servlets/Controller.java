@@ -83,7 +83,7 @@ public class Controller extends HttpServlet {
 						  + "quarters. We have a competitive product, but we "
 						  + "need to do a better job of selling it!";
 				ToneAnalysis toneAnalysis = AnalizadorTono.analyse(text);
-				System.out.println(toneAnalysis);
+				out.println(toneAnalysis.toString());
 		}
 		out.println("</html>");
 	}
