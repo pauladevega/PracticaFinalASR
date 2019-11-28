@@ -40,5 +40,6 @@
 			<attribute name="test" value="true"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/paula/Downloads/json.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
