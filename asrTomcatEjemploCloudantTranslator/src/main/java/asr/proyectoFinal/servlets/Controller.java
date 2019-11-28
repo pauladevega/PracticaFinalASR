@@ -6,6 +6,10 @@ import org.json.*;
 import org.json.JSONObject;
 import java.lang.Exception;
 
+import asr.proyectoFinal.dominio.DocumentTone;
+import asr.proyectoFinal.dominio.Tone;
+import asr.proyectoFinal.dominio.SentencesTone;
+
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -88,10 +92,12 @@ public class Controller extends HttpServlet {
 				break;
 			case "/Interpretar":
 			
-				String text = "Team, I know that times are tough! Product "
+			/*	String text = "Team, I know that times are tough! Product "
 						  + "sales have been disappointing for the past three "
 						  + "quarters. We have a competitive product, but we "
-						  + "need to do a better job of selling it!";
+						  + "need to do a better job of selling it!";*/
+				String text = "I really don't think this is working, I think we should break up.";
+				//String text = "Today is my birthday!";
 				ToneAnalysis toneAnalysis = AnalizadorTono.analyse(text);
 				//System.out.println(toneAnalysis.toString());
 				
@@ -109,26 +115,33 @@ public class Controller extends HttpServlet {
 				{
 					JSONObject jsonObject = new JSONObject(toneAnalysis.toString());
 					
+					
+					DocumentTone dt = parseJSONObjectToDocumentTone(jsonObject);
+					System.out.println(dt.toString());
+					
+					System.out.println("\n\n\n\n");
+					
+					
 					//System.out.println(jsonObject.keySet());
 					//JSONArray ja = new JSONArray();
 					//ja = jsonObject.names();
 					//System.out.println(ja.toString());
 					
-					ArrayList<String> keys = new ArrayList<String>();
-					Iterator it = jsonObject.keySet().iterator();
-					String key;
-					while(it.hasNext()) {
+					//ArrayList<String> keys = new ArrayList<String>();
+					//Iterator it = jsonObject.keySet().iterator();
+					//String key;
+					//while(it.hasNext()) {
 						//System.out.println(it.next().toString());
-						keys.add(it.next().toString());
-					}
+						//keys.add(it.next().toString());
+				//}
 					
 					//key = keys.get(1);
 						
-					Iterator i = keys.iterator();
-					ArrayList<JSONArray> values = new ArrayList<JSONArray>();
-					while(i.hasNext()) {
-						System.out.println(i.next());
-					}
+					//Iterator i = keys.iterator();
+					//ArrayList<JSONArray> values = new ArrayList<JSONArray>();
+					//while(i.hasNext()) {
+					//	System.out.println(i.next());
+					//}
 					
 					
 					
@@ -173,8 +186,8 @@ public class Controller extends HttpServlet {
 					
 					System.out.println("\n \n \n \n");
 					
-					
-					JSONArray sentenceToneArray = jsonObject.getJSONArray("sentences_tone");
+				
+/*					JSONArray sentenceToneArray = jsonObject.getJSONArray("sentences_tone");
 					System.out.println(sentenceToneArray.toString());
 					
 					JSONObject sentenceTone = sentenceToneArray.getJSONObject(1);
@@ -188,14 +201,14 @@ public class Controller extends HttpServlet {
 
 					JSONObject tono1 = toneArray1.getJSONObject(0);
 					System.out.println(tono1.toString());
-					/*
+					
 					 * Me devuelve:
 					 * {"score":0.6165,"tone_name":"Sadness","tone_id":"sadness"}
-					 */
+					 
 					
 					Double score1 = tono1.getDouble("score");
 					System.out.println(score1.toString());
-					/*me devuelve: 0.6165*/
+					me devuelve: 0.6165
 					
 					
 					//JSONArray tone = sentenceTone.getJSONArray("tones");
@@ -205,7 +218,7 @@ public class Controller extends HttpServlet {
 					//System.out.println(score);
 							
 							
-				/*	JSONObject root = new JSONObject(yourJsonString);
+					JSONObject root = new JSONObject(yourJsonString);
 					JSONArray sportsArray = root.getJSONArray("sport");
 					// now get the first element:
 					JSONObject firstSport = sportsArray.getJSONObject(0);
@@ -213,7 +226,7 @@ public class Controller extends HttpServlet {
 					String name = firstSport.getString("name"); // basketball
 					int id = firstSport.getInt("id"); // 40
 					JSONArray leaguesArray = firstSport.getJSONArray("leagues");
-*/
+
 					
 					//System.out.println(jsonObject.getJSONArray(key));
 					
@@ -221,11 +234,13 @@ public class Controller extends HttpServlet {
 					
 					
 					//System.out.println(jsonObject.toString());
-				}
+*/				}
 				catch(Exception e)
 				{
 					e.printStackTrace();
 				}
+				
+				break;
 
 		}
 		out.println("</html>");
@@ -236,6 +251,27 @@ public class Controller extends HttpServlet {
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		doGet(request, response);
+	}
+	
+	
+	public DocumentTone parseJSONObjectToDocumentTone(JSONObject jo)
+	{
+		JSONObject documentTone = jo.getJSONObject("document_tone");
+		JSONArray toneArray = documentTone.getJSONArray("tones");
+		ArrayList<Tone> tonos = new ArrayList<Tone>();
+		for(int i = 0; i < toneArray.length(); i++){
+			JSONObject tono = toneArray.getJSONObject(i);
+			Double score = tono.getDouble("score");
+			String toneName = tono.getString("tone_name");
+			String toneID = tono.getString("tone_id");
+			Tone t = new Tone(toneID, toneName, score);
+			tonos.add(t);
+		}
+
+		DocumentTone dt = new DocumentTone(tonos);
+
+		return dt;
+		
 	}
 
 }

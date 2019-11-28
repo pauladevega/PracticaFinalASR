@@ -35,6 +35,10 @@ public class Tone
 	}
 
 
+	public String toString(){
+		return "Tono " + toneID + ": " + score + " " + toneName;
+	}
+
 	//Constructores
 //	public Tone Tone();
 
@@ -46,3 +50,4 @@ public class Tone
 
 
 }
+
