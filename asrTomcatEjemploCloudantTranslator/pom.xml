@@ -115,7 +115,12 @@
  		<version>8.0.1</version>
 	</dependency>
 
-	
+
+	<dependency>
+		<groupId>com.ibm.watson</groupId>
+		<artifactId>speech-to-text</artifactId>
+		<version>8.0.1</version>
+	</dependency>
   </dependencies>
 
   <build>

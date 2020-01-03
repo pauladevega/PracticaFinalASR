@@ -22,7 +22,8 @@ public class Traductor
 				model+="-conversational";
 		}
 		else
-			model="en-es";
+			//model="en-es";
+			model="es-en";
 
 		Authenticator authenticator = new IamAuthenticator("sGBqIG-kLec4RdsA3imHp_lvb7MMlZNzq-PgkmCX59P0");
 		LanguageTranslator languageTranslator = new LanguageTranslator("2018-05-01", authenticator);

@@ -6,14 +6,26 @@ import org.json.*;
 import org.json.JSONObject;
 import java.lang.Exception;
 
-import asr.proyectoFinal.dominio.DocumentTone;
-import asr.proyectoFinal.dominio.Tone;
-import asr.proyectoFinal.dominio.SentencesTone;
-
-
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.ArrayList; 	
+import java.util.ArrayList; 
+import java.util.List;
+
+import java.nio.Buffer;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
+import org.apache.commons.io.FileUtils;
+
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.MultipartConfig;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import javax.servlet.http.Part;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -31,12 +43,13 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
-import asr.proyectoFinal.dao.CloudantPalabraStore;
-import asr.proyectoFinal.dominio.Palabra;
-import asr.proyectoFinal.services.Traductor;
+//import asr.proyectoFinal.dao.CloudantPalabraStore;
+//import asr.proyectoFinal.dominio.Palabra;
+//import asr.proyectoFinal.services.Traductor;
 
-import asr.proyectoFinal.services.AnalizadorTono;
+//import asr.proyectoFinal.services.AnalizadorTono;
 import com.ibm.cloud.sdk.core.security.Authenticator;
 import com.ibm.cloud.sdk.core.security.ConfigBasedAuthenticatorFactory;
 import com.ibm.watson.tone_analyzer.v3.model.ToneAnalysis;
@@ -44,207 +57,149 @@ import com.ibm.watson.tone_analyzer.v3.model.ToneChatOptions;
 import com.ibm.watson.tone_analyzer.v3.model.ToneOptions;
 import com.ibm.watson.tone_analyzer.v3.model.UtteranceAnalyses;
 import com.ibm.cloud.sdk.core.security.IamAuthenticator;
+
+import com.ibm.cloud.sdk.core.security.ConfigBasedAuthenticatorFactory;
+import com.ibm.watson.speech_to_text.v1.model.RecognizeOptions;
+import com.ibm.watson.speech_to_text.v1.SpeechToText;
+import com.ibm.watson.speech_to_text.v1.model.SpeechModel;
+import com.ibm.watson.speech_to_text.v1.model.SpeechRecognitionResult;
+import com.ibm.watson.speech_to_text.v1.model.SpeechRecognitionResults;
+
+import com.ibm.watson.speech_to_text.v1.model.GetModelOptions;
+
+import com.ibm.cloud.sdk.core.http.HttpMediaType;
+import com.ibm.cloud.sdk.core.security.Authenticator;
+
+import java.io.*;
+
+
 /**
  * Servlet implementation class Controller
  */
-@WebServlet(urlPatterns = {"/listar", "/insertar", "/Interpretar"})
+//@WebServlet(urlPatterns = {"/listar", "/insertar", "/Interpretar"})
+@MultipartConfig
 public class Controller extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException 
 	{
-		PrintWriter out = response.getWriter();
-		out.println("<html><head><meta charset=\"UTF-8\"></head><body>");
 		
-		CloudantPalabraStore store = new CloudantPalabraStore();
-		System.out.println(request.getServletPath());
-		switch(request.getServletPath())
-		{
-			case "/listar":
-				if(store.getDB() == null)
-					  out.println("No hay DB");
-				else
-					out.println("Palabras en la BD Cloudant:<br />" + store.getAll());
-				break;
-				
-			case "/insertar":
-				Palabra palabra = new Palabra();
-				String parametro = request.getParameter("palabra");
-
-				if(parametro==null)
-				{
-					out.println("usage: /insertar?palabra=palabra_a_translate");
-				}
-				else
-				{
-					if(store.getDB() == null) 
-					{
-						out.println(String.format("Palabra: %s", palabra));
-					}
-					else
-					{
-						parametro = Traductor.translate(parametro, "es", "en", false);
-						palabra.setName(parametro);
-						store.persist(palabra);
-					    out.println(String.format("Almacenada la palabra: %s", palabra.getName()));			    	  
-					}
-				}
-				break;
-			case "/Interpretar":
+		System.out.println(request.getParameter("parametro"));
+		System.out.println(request.getParameter("dictar"));
+		
+		if((request.getParameter("parametro")) != null) {
+		//if((request.getParameter("parametro")).equals("Interpretar")) {
+			System.out.println("entro en interpretar");
+			String texto = request.getParameter("text");
+			String lang = request.getParameter("language");
 			
-			/*	String text = "Team, I know that times are tough! Product "
-						  + "sales have been disappointing for the past three "
-						  + "quarters. We have a competitive product, but we "
-						  + "need to do a better job of selling it!";*/
-				String text = "I really don't think this is working, I think we should break up.";
-				//String text = "Today is my birthday!";
-				ToneAnalysis toneAnalysis = AnalizadorTono.analyse(text);
-				//System.out.println(toneAnalysis.toString());
+			HttpSession session = request.getSession(true);
+			session.setAttribute("texto", texto);
+			session.setAttribute("lang", lang);
+			
+			String parametro = request.getParameter("parametro");
+			switch(parametro)
+			{
+				case "Interpretar":
+					request.getRequestDispatcher("/interpretar.jsp").forward(request,response);
+					break;
+					
+				/*case "Vamos":
+					String action = request.getParameter("action");
+					
+					switch(action) {
+						case "bbdd":
+							request.getRequestDispatcher("/guardar.jsp").forward(request,response);
+							break;
+						case "translate":
+							request.getRequestDispatcher("/traducir.jsp").forward(request,response);
+							break;
+						default:
+							break;
+					}
+					break;*/
 				
-				// https://stleary.github.io/JSON-java/
-				//he tenido que añadir en el pom.xml:
-				/*
-				 *     <dependency>
-        					<groupId>org.json</groupId>
-        					<artifactId>json</artifactId>
-        					<version>20190722</version>
-    					</dependency>
-				 */
-				
-				try
-				{
-					JSONObject jsonObject = new JSONObject(toneAnalysis.toString());
-					
-					
-					DocumentTone dt = parseJSONObjectToDocumentTone(jsonObject);
-					System.out.println(dt.toString());
-					
-					System.out.println("\n\n\n\n");
-					
-					
-					//System.out.println(jsonObject.keySet());
-					//JSONArray ja = new JSONArray();
-					//ja = jsonObject.names();
-					//System.out.println(ja.toString());
-					
-					//ArrayList<String> keys = new ArrayList<String>();
-					//Iterator it = jsonObject.keySet().iterator();
-					//String key;
-					//while(it.hasNext()) {
-						//System.out.println(it.next().toString());
-						//keys.add(it.next().toString());
-				//}
-					
-					//key = keys.get(1);
+			}
+			
+		}else {//if((request.getParameter("dictar")).equals("Dictar")){
+		//	System.out.println("ola");
+		//	String pa = request.getParameter("dictar");
+		//	System.out.println(pa);
+			System.out.println("entro en dictar");
+			
+			PrintWriter out = response.getWriter();
+			//System.out.println("<html><head><meta charset=\"UTF-8\"></head><body>");
+			
+/*			ServletContext servletContext = getServletContext();
+			System.out.println("Entro\n");
+			 Part filePart = request.getPart("audio"); // Retrieves <input type="file" name="file">
+			 System.out.println("Part Hecho\n");
+			 System.out.println(filePart);
+			 String fileName = Paths.get(filePart.getSubmittedFileName()).getFileName().toString(); // MSIE fix.
+			 System.out.println("El nombre del archivo es: " + fileName);
+			 InputStream fileContent = filePart.getInputStream();
+			 System.out.println("InputStream\n");
+			 System.out.println(fileContent.toString());
+			 File audio = new File(servletContext.getRealPath("/") + "/audios/"+ fileName);
+			 System.out.println("Audio vacio en teoria\n: " + audio);
+
+			 
+			 FileUtils.copyInputStreamToFile(fileContent, audio);
+			 System.out.println("El audio ya ha sido copiado: ");
+			 System.out.println(audio);
+			 
+			System. out.println("Copio audio en file\n");
+			 System.out.println(audio.toString());
+			 
+			 
+			 
+			 
+			 
+			 System.out.println("Ha entrado en Speech to text");
+			  Authenticator authenticator = new IamAuthenticator("t2z5j9x4Ys5v_vqCLOVb6hezjvydkoGDOIi8bWTUib74");
+			  SpeechToText service = new SpeechToText(authenticator);
+			  service.setServiceUrl("https://gateway-lon.watsonplatform.net/speech-to-text/api");
+			  System.out.println("Ha pasado el authenticator");
+			  
+			  
+			  GetModelOptions getModelOptions = new GetModelOptions.Builder()
+					  .modelId("en-GB_NarrowbandModel")
+					  .build();
+
+					SpeechModel speechModel = service.getModel(getModelOptions).execute().getResult();
+					System.out.println(speechModel);
+			  
+
+			  RecognizeOptions options = null;
+			  
+			  try {
+					 System.out.println("principio del try");
+					options = new RecognizeOptions.Builder()
+					    .audio(audio)
+					    .contentType(HttpMediaType.AUDIO_WAV)
+					    .model("en-GB_NarrowbandModel")
+					    .build();
+					 System.out.println("final del try");
+					 SpeechRecognitionResults transcript = service.recognize(options).execute().getResult();
+					 String caststr = transcript.toString();
 						
-					//Iterator i = keys.iterator();
-					//ArrayList<JSONArray> values = new ArrayList<JSONArray>();
-					//while(i.hasNext()) {
-					//	System.out.println(i.next());
-					//}
-					
-					
-					
-
-					//JSONObject tone = sentenceToneArray.getJSONObject(0);
-					
-					
-					/*for (int j = 0; j< sentenceToneArray.length(); j++) {
-						System.out.println(sentenceToneArray.getJSONObject(j).toString());
-					}*/
-					
-					JSONObject documentTone = jsonObject.getJSONObject("document_tone");
-					System.out.println(documentTone.toString());
-					/*
-					 * Me devuelve:
-					 * {"tones":[{"score":0.6165,"tone_name":"Sadness","tone_id":"sadness"},{"score":0.829888,"tone_name":"Analytical","tone_id":"analytical"}]}
-					 */
-					
-					
-					JSONArray toneArray = documentTone.getJSONArray("tones");
-					System.out.println(toneArray.toString());
-					
-					/*
-					 * Me devuelve: 
-					 * [{"score":0.6165,"tone_name":"Sadness","tone_id":"sadness"},{"score":0.829888,"tone_name":"Analytical","tone_id":"analytical"}]
-					 */
-					
-					JSONObject tono = toneArray.getJSONObject(0);
-					System.out.println(tono.toString());
-					/*
-					 * Me devuelve:
-					 * {"score":0.6165,"tone_name":"Sadness","tone_id":"sadness"}
-					 */
-					
-					Double score = tono.getDouble("score");
-					System.out.println(score.toString());
-					/*me devuelve: 0.6165*/
-					String toneName = tono.getString("tone_name");
-					System.out.println(toneName);
-					String toneID = tono.getString("tone_id");
-					System.out.println(toneID);
-					
-					System.out.println("\n \n \n \n");
-					
-				
-/*					JSONArray sentenceToneArray = jsonObject.getJSONArray("sentences_tone");
-					System.out.println(sentenceToneArray.toString());
-					
-					JSONObject sentenceTone = sentenceToneArray.getJSONObject(1);
-					System.out.println(sentenceTone.toString());
-										
-					int id = sentenceTone.getInt("sentence_id");					
-					System.out.println(id);
-					
-					JSONArray toneArray1 = sentenceTone.getJSONArray("tones");
-					System.out.println(toneArray1.toString());
-
-					JSONObject tono1 = toneArray1.getJSONObject(0);
-					System.out.println(tono1.toString());
-					
-					 * Me devuelve:
-					 * {"score":0.6165,"tone_name":"Sadness","tone_id":"sadness"}
-					 
-					
-					Double score1 = tono1.getDouble("score");
-					System.out.println(score1.toString());
-					me devuelve: 0.6165
-					
-					
-					//JSONArray tone = sentenceTone.getJSONArray("tones");
-					//System.out.println(tone.toString());
-					
-					//String score = tone.getString("score");
-					//System.out.println(score);
-							
-							
-					JSONObject root = new JSONObject(yourJsonString);
-					JSONArray sportsArray = root.getJSONArray("sport");
-					// now get the first element:
-					JSONObject firstSport = sportsArray.getJSONObject(0);
-					// and so on
-					String name = firstSport.getString("name"); // basketball
-					int id = firstSport.getInt("id"); // 40
-					JSONArray leaguesArray = firstSport.getJSONArray("leagues");
-
-					
-					//System.out.println(jsonObject.getJSONArray(key));
-					
-					//System.out.println(jsonObject.getString(sentences_tone));
-					
-					
-					//System.out.println(jsonObject.toString());
-*/				}
-				catch(Exception e)
-				{
+						JSONObject jsonObject = new JSONObject(caststr);
+						System.out.println((jsonObject));
+					 System.out.println("El primer transcript dice");
+					 System.out.println(transcript);
+				} catch (FileNotFoundException e) {
+					// TODO Auto-generated catch block
 					e.printStackTrace();
+					 System.out.println("no file found");
 				}
-				
-				break;
-
+			 */
+			 
+			 
+			request.getRequestDispatcher("/show.jsp").forward(request,response);
+			
 		}
-		out.println("</html>");
 	}
+
 
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
@@ -254,24 +209,4 @@ public class Controller extends HttpServlet {
 	}
 	
 	
-	public DocumentTone parseJSONObjectToDocumentTone(JSONObject jo)
-	{
-		JSONObject documentTone = jo.getJSONObject("document_tone");
-		JSONArray toneArray = documentTone.getJSONArray("tones");
-		ArrayList<Tone> tonos = new ArrayList<Tone>();
-		for(int i = 0; i < toneArray.length(); i++){
-			JSONObject tono = toneArray.getJSONObject(i);
-			Double score = tono.getDouble("score");
-			String toneName = tono.getString("tone_name");
-			String toneID = tono.getString("tone_id");
-			Tone t = new Tone(toneID, toneName, score);
-			tonos.add(t);
-		}
-
-		DocumentTone dt = new DocumentTone(tonos);
-
-		return dt;
-		
-	}
-
 }

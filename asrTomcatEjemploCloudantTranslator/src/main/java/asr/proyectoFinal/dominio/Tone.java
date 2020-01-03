@@ -36,7 +36,8 @@ public class Tone
 
 
 	public String toString(){
-		return "Tono " + toneID + ": " + score + " " + toneName;
+		//return "\nTono " + toneID + ": " + score + " " + toneName + "\n";
+		return toneID + ": " + score ;
 	}
 
 	//Constructores
