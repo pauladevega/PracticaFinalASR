@@ -87,7 +87,6 @@
 							
 							if(store.getDB() == null) 
 							{
-								//out.println(String.format("Palabra: %s", palabra));
 								%>
 								
 								<%= text %>
@@ -101,7 +100,7 @@
 								Almacenado tu texto: <br> <br> <br>
 								<%= palabra.getName() %>
 								
-							    <%//out.println(String.format("Almacenada la palabra: %s", palabra.getName()));
+							    <%
 							    
 							}
 							
@@ -128,7 +127,7 @@
 						%>
 						<ul>
 						<%
-						//out.println("Palabras en la BD Cloudant:<br />" + store.getAll());
+						
 						List<Palabra> listaBBDD = (List<Palabra>)store.getAll();
 						
 						Iterator<Palabra> it = listaBBDD.iterator();
@@ -137,8 +136,8 @@
 							Palabra p = (Palabra)it.next();
 							%>
 							<li><%= p.toString() %></li>
-						<%}
 						
+						<%}
 					}
 				%>
 				

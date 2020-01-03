@@ -80,75 +80,46 @@
 							<%
 							session = request.getSession(true);
 							
-							//String lang = request.getParameter("language");
-							//String text = request.getParameter("text");
 							String text = session.getAttribute("texto").toString();
-							//System.out.println(text);
 							String lang = session.getAttribute("lang").toString();
 							
 							if(lang.equals("es")){
 								text = Traductor.translate(text, "es", "en", false);
-								//System.out.println(text);
 							}
 							
-							
-							
-							//String text = "I really don't think this is working. I think we should break up. We can remain friends and you can call me anytime you want";
-							//String text = "Today is my birthday!";
-							//	String text = "Hello, it is a very nice day today";
 							ToneAnalysis toneAnalysis = AnalizadorTono.analyse(text);
-							//System.out.println(toneAnalysis.toString());
-						
 						
 							JSONObject jsonObject = new JSONObject(toneAnalysis.toString());
-							//System.out.println(jsonObject.toString());
 							
 							JSONObject jo = jsonObject.getJSONObject("document_tone");
-							//System.out.println(jo.toString());
 							
 							JSONArray tones = jo.getJSONArray("tones");
 						
 							ArrayList<Tone> documentToneList = new ArrayList<Tone>();
 							Iterator it = tones.iterator();	
 							while(it.hasNext()){
-								//System.out.println(it.next().toString());
 								JSONObject o = (JSONObject)it.next();
-								//System.out.println(o.toString());
-								
+							
 								Double score = o.getDouble("score");
 								String toneName = o.getString("tone_name");
 								String toneID = o.getString("tone_id");
 								Tone t = new Tone(toneID, toneName, score);
-								//System.out.println("\n"+ t.toString());
-								
+
 								documentToneList.add(t);		
 							}
-							
-// 								Iterator it2 = documentToneList.iterator();
-// 								while(it2.hasNext()){
-// 									System.out.println(it2.next().toString());
-// 								}
-								
-								//Hasta aquí, todo bien
-								
+														
 							JSONArray ja = jsonObject.getJSONArray("sentences_tone");
-							//System.out.println(ja.toString());
-							
-							
+					
 							ArrayList<SentencesTone> sentencesToneListComplete = new ArrayList<SentencesTone>();
 							Iterator i = ja.iterator();
 							while(i.hasNext()){
 								JSONObject o = (JSONObject) i.next();
-							 	//System.out.println(o.toString());
 								
 								String texto = o.getString("text");
-								//System.out.println(texto);
 								
 								int sentenceID = o.getInt("sentence_id");
-								//System.out.println(sentenceID);
 								
 								JSONArray tones2 = o.getJSONArray("tones");
-								//System.out.println(tones2.toString());
 								
 								ArrayList<Tone> toneList = new ArrayList<Tone>();
 								
@@ -160,25 +131,22 @@
 									String toneID = obj.getString("tone_id");
 									
 									Tone t = new Tone(toneID, toneName, score);
-								//	System.out.println(t.toString());
 									
 									toneList.add(t);
 								}
 								
 								SentencesTone st = new SentencesTone(toneList, sentenceID, texto);
-								//System.out.println(st.toString());
 								
 								sentencesToneListComplete.add(st);
 							
 							}
-						//	System.out.println(sentencesToneListComplete.toString());%>
+						%>
 
 					<b>Tono general del texto:</b><br>
 					<ul>
 					<%
 						Iterator it2 = documentToneList.iterator();
 						while(it2.hasNext()){
-							//System.out.println(it2.next().toString());
 							%>
 							
 							<li><%= it2.next().toString()%></li>
@@ -191,7 +159,6 @@
 					
 					<ul>
 					<%
-						//sentencesToneListComplete.toString()
 						Iterator<SentencesTone> iter = sentencesToneListComplete.iterator();
 						while(iter.hasNext()){
 							SentencesTone st = iter.next();
@@ -239,18 +206,10 @@
 					</header>
 						
 						<div>
-							<!-- <ul>
-								<li>¿Quieres<a href="#" > guardar los resultados en la base de datos?</a></li>
-								
-								<li>¿Quieres <a href="#">traducir los resultados a español?</a></li>
-							</ul>-->
-							<!-- <form method="POST" action="Controller2">-->
+
 							<form method="POST" action="Controller2">
-							<!-- <form method="POST" action="/asrTomcatEjemploCloudantTranslator/Controller2"> -->
-							
 								<%
 									session.setAttribute("sentence", sentencesToneListComplete);
-									//session.setAttribute("sentence", new ArrayList<SentencesTone>())
 									session.setAttribute("document", documentToneList);
 								%>
 								
@@ -268,32 +227,7 @@
 								<input type="submit" class="button primary" name="guarda" value="Vamos" >						
 							</form>
 							
-						</div>
-							
-							<%
-							//String tonoRandom = sentencesToneListComplete.get(0).getTones().get(0).getToneName();
-						
-							
-							//tonoRandom = Traductor.translate(tonoRandom, "en", "es", false);
-							
-						//	String a = "Imagine a cloud";
-							//String a = "Wow, it's so sunny outside, it makes me so happy! Why don't we go for a walk? I think it would be very fun";
-							//a = Traductor.translate(a, "en", "es", false);
-							//System.out.println(a);
-							
-/* 							Palabra palabra = new Palabra();
-							CloudantPalabraStore store = new CloudantPalabraStore();	
-							palabra.setName(tonoRandom);
-							store.persist(palabra);
-							 */
-							 
-							//String palabras = "anger";// fear joy sadness analytical confident tentative";
-							//palabras = Traductor.translate(palabras, "en", "es", false);
-							//System.out.println(palabras);
-
-							%>
-										
-						
+						</div>						
 					</div>
 				</div>
 			</section>

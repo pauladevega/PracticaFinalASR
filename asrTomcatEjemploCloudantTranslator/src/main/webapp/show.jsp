@@ -113,79 +113,52 @@
 						</header>
 						
 						<div>
-						<%
-						System.out.println("me explicas?");
-						%>
 						
 						<%
 						ServletContext servletContext = getServletContext();
-						System.out.println("Entro\n");
-						 Part filePart = request.getPart("audio"); // Retrieves <input type="file" name="file">
-						 System.out.println("Part Hecho\n");
-						 System.out.println(filePart);
-						 String fileName = Paths.get(filePart.getSubmittedFileName()).getFileName().toString(); // MSIE fix.
-						 System.out.println("El nombre del archivo es: " + fileName);
-						 InputStream fileContent = filePart.getInputStream();
-						 System.out.println("InputStream\n");
-						 System.out.println(fileContent.toString());
-						 File audio = new File(servletContext.getRealPath("/") + "/audios/"+ fileName);
-						 System.out.println("Audio vacio en teoria\n: " + audio);
 
+						Part filePart = request.getPart("audio"); // Retrieves <input type="file" name="file">
+						
+						String fileName = Paths.get(filePart.getSubmittedFileName()).getFileName().toString(); // MSIE fix.
+						
+						InputStream fileContent = filePart.getInputStream();
+					
+						File audio = new File(servletContext.getRealPath("/") + "/audios/"+ fileName);
+
+						FileUtils.copyInputStreamToFile(fileContent, audio);
 						 
-						 FileUtils.copyInputStreamToFile(fileContent, audio);
-						 System.out.println("El audio ya ha sido copiado: ");
-						 System.out.println(audio);
-						 
-						System. out.println("Copio audio en file\n");
-						 System.out.println(audio.toString());
-						 
-						 
-						 
-						 
-						 
-						 System.out.println("Ha entrado en Speech to text");
-						  Authenticator authenticator = new IamAuthenticator("t2z5j9x4Ys5v_vqCLOVb6hezjvydkoGDOIi8bWTUib74");
-						  SpeechToText service = new SpeechToText(authenticator);
-						  service.setServiceUrl("https://gateway-lon.watsonplatform.net/speech-to-text/api");
-						  System.out.println("Ha pasado el authenticator");
+						Authenticator authenticator = new IamAuthenticator("t2z5j9x4Ys5v_vqCLOVb6hezjvydkoGDOIi8bWTUib74");
+						SpeechToText service = new SpeechToText(authenticator);
+						service.setServiceUrl("https://gateway-lon.watsonplatform.net/speech-to-text/api");
 						  
-						  
-						  GetModelOptions getModelOptions = new GetModelOptions.Builder()
+						GetModelOptions getModelOptions = new GetModelOptions.Builder()
 								  .modelId("en-GB_NarrowbandModel")
 								  .build();
 
-								SpeechModel speechModel = service.getModel(getModelOptions).execute().getResult();
-								System.out.println(speechModel);
+						SpeechModel speechModel = service.getModel(getModelOptions).execute().getResult();
 								
 						String lang = speechModel.getLanguage();
-						System.out.println(lang);
 						
 						if(lang.equals("en-GB"))
 							lang = "en";
 						
 						session.setAttribute("lang", lang);
 						
+						RecognizeOptions options = null;
 						  
-
-						  RecognizeOptions options = null;
-						  
-						  try {
-								 System.out.println("principio del try");
-								options = new RecognizeOptions.Builder()
+						try {
+							
+						 	options = new RecognizeOptions.Builder()
 								    .audio(audio)
 								    .contentType(HttpMediaType.AUDIO_WAV)
 								    .model("en-GB_NarrowbandModel")
 								    .build();
-								 System.out.println("final del try");
-								 SpeechRecognitionResults transcript = service.recognize(options).execute().getResult();
-								 String caststr = transcript.toString();
-									
-									JSONObject jsonObject = new JSONObject(caststr);
-									System.out.println((jsonObject.toString()));
-								 System.out.println("El primer transcript dice");
-								 System.out.println(transcript);
 							
-						 
+							SpeechRecognitionResults transcript = service.recognize(options).execute().getResult();
+							String caststr = transcript.toString();
+									
+							JSONObject jsonObject = new JSONObject(caststr);
+
 						%>
 					
 						
@@ -196,8 +169,7 @@
 						
 						<%
 							JSONArray results = jsonObject.getJSONArray("results");
-							System.out.println(results.toString());
-										 
+
 							String document = "";
 										 
 							Iterator it = results.iterator();
@@ -212,9 +184,9 @@
 									
 									transcr = transcr.substring(0,1).toUpperCase() + transcr.substring(1);
 									
-									%>
+							%>
 									
-									<%
+							<%
 									document = document + transcr + ". ";
 									
 								}
@@ -236,36 +208,13 @@
 						  } catch (FileNotFoundException e) {
 								// TODO Auto-generated catch block
 								e.printStackTrace();
-								 System.out.println("no file found");
 							}
 					%>
 						
-					<!-- <header>
-							<h2>¿Qué quieres hacer ahora?</h2>
-					</header>-->
 						
 						<div>
-							<!-- <ul>
-								<li>¿Quieres<a href="#" > guardar los resultados en la base de datos?</a></li>
-								
-								<li>¿Quieres <a href="#">traducir los resultados a español?</a></li>
-							</ul>-->
-							<!-- <form method="POST" action="interpretartranscripcion.jsp">-->
 							<form method="POST" action="interpretar.jsp">
-														
-							<!-- 	<div class="col-4 col-12-small">
-									<input type="radio" id="bbdd" name="action" value="bbdd">
-									<label for="bbdd">Guardar los resultados en nuestra base de datos</label>
-								</div>
-								
-								<div class="col-4 col-12-small">
-									<input type="radio" id="translate" name="action" value="translate">
-									<label for="translate">Traducir los resultados a español</label>
-								</div>
-								<br>
-								-->
-								<input type="submit" class="button primary" value="Analizar el tono del texto">
-								
+								<input type="submit" class="button primary" value="Analizar el tono del texto">		
 							</form>
 							
 						</div>
